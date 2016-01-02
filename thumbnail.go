@@ -60,7 +60,7 @@ func makeThumbnail(w http.ResponseWriter, r *http.Request) {
 
 	infoLog.Printf("Received request for %s", url)
 
-	thumbFile := strings.Replace(url[strings.Index(url, "://")+3:]+".png", "/", "-", -1)
+	thumbFile := strings.Replace(url[strings.Index(url, "://")+3:]+".png", "/", ".", -1)
 
 	// Fetch the thumbnail
 	thumb := exec.Command("xvfb-run", "--server-args", "-screen 0 1366x768x24", "webkit2png", "-o", thumbFile, url)
