@@ -84,4 +84,6 @@ func makeThumbnail(w http.ResponseWriter, r *http.Request) {
 	}
 
 	infoLog.Printf(color.GreenString("✓") + " Created " + thumbFile)
+
+	fmt.Fprintf(w, thumbFile)
 }
