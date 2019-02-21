@@ -1,6 +1,6 @@
 siteshot
 ========
-![MIT license](https://img.shields.io/github/license/writeas/siteshot.svg)
+![AGPL license](https://img.shields.io/github/license/writeas/siteshot.svg)
 
 Website screenshot capturer written in Go and designed to run without an X session (thanks to [Xvfb](http://www.x.org/archive/X11R7.6/doc/man/man1/Xvfb.1.xhtml)).
 
