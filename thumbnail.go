@@ -24,18 +24,14 @@ import (
 	"github.com/fatih/color"
 )
 
-// configuration constants
-const (
-	port = 3333
-)
-
 var (
 	infoLog *log.Logger
 	errLog  *log.Logger
 )
 
 var (
-	wd string
+	wd   string
+	port = 3333
 
 	// Thumbnail parameters
 	thumbWidth  int
@@ -58,6 +54,7 @@ func main() {
 
 	// Set configuration
 	dim := flag.String("dim", "", "Dimensions of final thumbnail")
+	portPtr := flag.Int("p", 3333, "Port to serve on")
 	flag.Parse()
 	if *dim != "" {
 		c := strings.Split(*dim, "x")
@@ -79,6 +76,7 @@ func main() {
 		thumbWidth = 320
 		thumbHeight = 240
 	}
+	port = *portPtr
 
 	// Start server
 	infoLog.Printf("Listening on :%d", port)
