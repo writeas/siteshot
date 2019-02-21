@@ -11,6 +11,7 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"log"
@@ -103,22 +104,26 @@ func makeThumbnail(w http.ResponseWriter, r *http.Request) {
 
 	// Fetch the thumbnail
 	thumb := exec.Command("xvfb-run", "--server-args", "-screen 0 1366x768x24", "webkit2png", "-o", thumbFile, url)
+	var stderr bytes.Buffer
+	thumb.Stderr = &stderr
 	if err := thumb.Run(); err != nil {
-		errLog.Printf("xvfb-run: %v", err)
+		errLog.Printf("xvfb-run: %v: %s", err, stderr.String())
 		return
 	}
 
 	// Resize to width
 	cmd := exec.Command("convert", filepath.Join(wd, thumbFile), "-define", "png:big-depth=16", "-define", "png:color-type=6", "-thumbnail", fmt.Sprintf("%d", thumbWidth), filepath.Join(wd, thumbFile))
+	cmd.Stderr = &stderr
 	if err := cmd.Run(); err != nil {
-		errLog.Printf("convert -thumbnail: %v", err)
+		errLog.Printf("convert -thumbnail: %v: %s", err, stderr.String())
 		return
 	}
 
 	// Crop to height
 	cmd = exec.Command("convert", filepath.Join(wd, thumbFile), "-define", "png:big-depth=16", "-define", "png:color-type=6", "-crop", fmt.Sprintf("%dx%d+0+0", thumbWidth, thumbHeight), filepath.Join(wd, thumbFile))
+	cmd.Stderr = &stderr
 	if err := cmd.Run(); err != nil {
-		errLog.Printf("convert -crop: %v", err)
+		errLog.Printf("convert -crop: %v: %s", err, stderr.String())
 		return
 	}
 
