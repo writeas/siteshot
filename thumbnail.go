@@ -11,12 +11,14 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/fatih/color"
@@ -34,6 +36,10 @@ var (
 
 var (
 	wd string
+
+	// Thumbnail parameters
+	thumbWidth  int
+	thumbHeight int
 )
 
 func main() {
@@ -50,8 +56,33 @@ func main() {
 		return
 	}
 
+	// Set configuration
+	dim := flag.String("dim", "", "Dimensions of final thumbnail")
+	flag.Parse()
+	if *dim != "" {
+		c := strings.Split(*dim, "x")
+		if len(c) != 2 {
+			errLog.Printf("usage: siteshot --dim 320x240")
+			return
+		}
+		thumbWidth, err = strconv.Atoi(c[0])
+		if err != nil {
+			errLog.Printf("usage: siteshot --dim 320x240")
+			return
+		}
+		thumbHeight, err = strconv.Atoi(c[1])
+		if err != nil {
+			errLog.Printf("usage: siteshot --dim 320x240")
+			return
+		}
+	} else {
+		thumbWidth = 320
+		thumbHeight = 240
+	}
+
 	// Start server
 	infoLog.Printf("Listening on :%d", port)
+	infoLog.Printf("Width: %d Height: %d", thumbWidth, thumbHeight)
 	http.HandleFunc("/", makeThumbnail)
 	http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 }
@@ -80,14 +111,14 @@ func makeThumbnail(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Resize to width
-	cmd := exec.Command("convert", filepath.Join(wd, thumbFile), "-define", "png:big-depth=16", "-define", "png:color-type=6", "-thumbnail", "320", filepath.Join(wd, thumbFile))
+	cmd := exec.Command("convert", filepath.Join(wd, thumbFile), "-define", "png:big-depth=16", "-define", "png:color-type=6", "-thumbnail", fmt.Sprintf("%d", thumbWidth), filepath.Join(wd, thumbFile))
 	if err := cmd.Run(); err != nil {
 		errLog.Printf("convert -thumbnail: %v", err)
 		return
 	}
 
 	// Crop to height
-	cmd = exec.Command("convert", filepath.Join(wd, thumbFile), "-define", "png:big-depth=16", "-define", "png:color-type=6", "-crop", "320x240+0+0", filepath.Join(wd, thumbFile))
+	cmd = exec.Command("convert", filepath.Join(wd, thumbFile), "-define", "png:big-depth=16", "-define", "png:color-type=6", "-crop", fmt.Sprintf("%dx%d+0+0", thumbWidth, thumbHeight), filepath.Join(wd, thumbFile))
 	if err := cmd.Run(); err != nil {
 		errLog.Printf("convert -crop: %v", err)
 		return
